@@ -62,9 +62,11 @@ public class GameUtils : MonoBehaviour
         player.GetComponent<MeshRenderer>().enabled = true;
         enemy.GetComponent<MeshRenderer>().enabled = true;
 
-        // Reset player/enemy health
+        // Reset player/enemy health and ammo
         playerCtrl.health = playerCtrl.maxHealth;
         enemyCtrl.health = enemyCtrl.maxHealth;
+        playerCtrl.ammo = playerCtrl.maxAmmo;
+        //enemyCtrl.ammo = enemyCtrl.maxAmmo;
     }
 
     private void checkForRoundEnd()

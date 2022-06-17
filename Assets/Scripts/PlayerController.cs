@@ -7,8 +7,6 @@ public class PlayerController : MonoBehaviour
     private float mouseX;                                   //  Mouse X value
     private float mouseY;                                   //  Mouse Y value
     private float ammoVelocity;                             //  Initial velocity (m/s) of each paintball
-    private float ammo;                                     //  Ammo remaining
-    private float maxAmmo;                                  //  Max ammo capacity
     private float ammoDamage;                               //  Damage dealt by each paintball
     private Rigidbody rb;                                   //  Rigidbody of the player model
     private Rigidbody rifle;                                //  Rigidbody of the weapon
@@ -25,6 +23,8 @@ public class PlayerController : MonoBehaviour
     public float health;
     public float maxHealth;
     public int wins;                                       //  Rounds won
+    public float ammo;                                     //  Ammo remaining
+    public float maxAmmo;                                  //  Max ammo capacity
 
     // Start is called before the first frame update
     void Start()
