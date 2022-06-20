@@ -29,7 +29,7 @@ public class PaintballMgr : MonoBehaviour
             audioPlayer.PlayOneShot(impactSound);
 
             //  Destroy this paintball instance
-            Destroy(gameObject, 0.2f);
+            Destroy(gameObject, 0.15f);
         }
         
     }

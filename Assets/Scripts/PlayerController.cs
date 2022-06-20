@@ -4,35 +4,32 @@ public class PlayerController : MonoBehaviour
 {
     
     private bool grounded;                                  //  Flag to check if player is on the ground
-    private bool running;                                   //  Flag to check/store if player is running
     private float mouseX;                                   //  Mouse X value
     private float mouseY;                                   //  Mouse Y value
     private float ammoVelocity;                             //  Initial velocity (m/s) of each paintball
-    private float ammoDamage;                               //  Damage dealt by each paintball
     private Rigidbody rb;                                   //  Rigidbody of the player model
     private Rigidbody rifle;                                //  Rigidbody of the weapon
-    private Camera firstPersonCam;                          //  First person camera object
-    private Camera thirdPersonCam;                          //  Third person camera object
-    [SerializeField] int jumpHeight = 5;
-    [SerializeField] int moveSpeed = 8;
-    [SerializeField] int mouseSensitivity = 100;
+    public Camera firstPersonCam;                           //  First person camera object
     public Rigidbody paintball;                             //  Paintball rb
     public AudioSource audioPlayer;                         //  Audio source
     public AudioClip fireSound;                             //  Sound to play when paintball is fired
     public AudioClip ping;                                  //  :)
+    public float ammoDamage;                                //  Damage dealt by each paintball
     public float score;
     public float health;
     public float maxHealth;
     public int wins;                                       //  Rounds won
     public float ammo;                                     //  Ammo remaining
     public float maxAmmo;                                  //  Max ammo capacity
+    public float jumpHeight;
+    public float moveSpeed;
+    public float mouseSensitivity;
 
     // Start is called before the first frame update
     void Start()
     {
         // Initialize variables
         grounded = false;
-        running = false;
         mouseX = 0f;
         mouseY = 0f;
         score = 0f;
@@ -44,9 +41,8 @@ public class PlayerController : MonoBehaviour
         maxHealth = health;
         wins = 0;
 
-        // Get camera objects
+        // Get first-person camera object
         firstPersonCam = GameObject.FindGameObjectWithTag("FirstPersonCamera").GetComponent<Camera>();
-        thirdPersonCam = GameObject.FindGameObjectWithTag("ThirdPersonCamera").GetComponent<Camera>();
 
         // Get the rigidbody component of the object this script is attached to
         rb = GetComponent<Rigidbody>();
@@ -87,45 +83,33 @@ public class PlayerController : MonoBehaviour
     // Check for cheat code inputs
     void checkForCheatCodes()
     {
-        // Add ammo (CTRL + T)
-        if(Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.T))
+        // Add ammo (LCTRL + T)
+        if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.T))
         {
             ammo += 10;
 
             Debug.Log("Player ammo count increased to " + ammo + "!");
         }
+
+        // Next round ( ']' )
+        if (Input.GetKeyDown(KeyCode.RightBracket))
+        {
+            GameUtils.nextRound(true);
+        }
+
+        // Add 100 score (0 on top of alphanumeric keyboard
+        if(Input.GetKeyDown(KeyCode.Alpha0))
+        {
+            score += 100;
+            Debug.Log("Player score increased to " + score);
+        }
+
+
     }
 
-    // Handle player input
-    void checkForInput()
+    // Handle for mouse inputs
+    void handleMouseInput()
     {
-        // Get horizontal and vertical inputs (-1 to 1)
-        float hInput = Input.GetAxis("Horizontal");
-        float vInput = Input.GetAxis("Vertical");
-
-        // Move player based on axial inputs
-        if(grounded)
-        {
-            rb.velocity = new Vector3(hInput * moveSpeed, rb.velocity.y, vInput * moveSpeed);
-        }
-        else
-        {
-            rb.velocity = new Vector3(hInput * moveSpeed, rb.velocity.y-9.81f/60.0f, vInput * moveSpeed);
-        }
-
-
-        // Jump
-        if (Input.GetKeyDown(KeyCode.Space) && grounded)
-        {
-            rb.velocity = new Vector3(rb.velocity.x, jumpHeight, rb.velocity.y);
-        }
-        // Sprint
-        if (Input.GetKey(KeyCode.LeftShift) && grounded)
-        { 
-            rb.velocity = new Vector3(hInput * moveSpeed * 2, rb.velocity.y, vInput * moveSpeed * 2);   
-        }
-
-
         // Check for fire input (LMB) from player
         if (Input.GetKeyDown(KeyCode.Mouse0) && ammo > 0)
         {
@@ -159,14 +143,40 @@ public class PlayerController : MonoBehaviour
             // Apply gravity to projectile
             projectile.useGravity = true;
         }
+    }
 
-        // Check for player rotation with mouse movement
-        mouseLook();
+    // Check and handle player movement inputs
+    void handleMovement()
+    {
+        // Get horizontal and vertical inputs (-1 to 1)
+        float hInput = Input.GetAxis("Horizontal");
+        float vInput = Input.GetAxis("Vertical");
+
+        // Move player based on axial inputs
+        if(grounded)
+        {
+            rb.velocity = new Vector3(hInput * moveSpeed, rb.velocity.y, vInput * moveSpeed);
+        }
+        else
+        {
+            rb.velocity = new Vector3(hInput * moveSpeed, rb.velocity.y-9.81f/60.0f, vInput * moveSpeed);
+        }
+
+
+        // Jump
+        if (Input.GetKeyDown(KeyCode.Space) && grounded)
+        {
+            rb.velocity = new Vector3(rb.velocity.x, jumpHeight, rb.velocity.y);
+            grounded = false;
+        }
+        // Sprint
+        if (Input.GetKey(KeyCode.LeftShift) && grounded)
+        { 
+            rb.velocity = new Vector3(hInput * moveSpeed * 2, rb.velocity.y, vInput * moveSpeed * 2);   
+        }
 
         // Rotate player direction relative to transform rotation
         rb.velocity = transform.rotation * rb.velocity;
-
-        checkForCheatCodes();
     }
 
     // Rotate player model relative to where the mouse is pointing
@@ -190,9 +200,26 @@ public class PlayerController : MonoBehaviour
         // Only check for input if the game is not locked
         if(!GameUtils.locked())
         {
-            checkForInput();
+            handleMouseInput();
+            
         }
-        
+        // Seperate looking and main control lock (for looking around during buy period)
+        if(!GameUtils.mouseLocked())
+        {
+            mouseLook();
+        }
+
+        checkForCheatCodes();
+    }
+
+    // Handle movement at fixed intervals (physics frames)
+    void FixedUpdate()
+    {
+        // Only check for input if the game is not locked
+        if (!GameUtils.locked())
+        {
+            handleMovement();
+        }
     }
 
 }

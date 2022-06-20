@@ -6,13 +6,18 @@ using UnityEngine.SceneManagement;
 public class GameUtils : MonoBehaviour
 {
     private static int maxRounds;                           //  Maximum number of rounds
+    private static float buyTime;                           //  Time in seconds of buy period
     private static bool Lock;                               //  Lock control of game objects such as player and enemy
+    private static bool mouseLock;                          //  Lock control of the mouse looking
+    private static bool buyEnabled;                         //  Flag for controlling the buy period at round start
     private static GameObject playerSpawn;                  //  Player spawner
     private static GameObject enemySpawn;                   //  Enemy spawner
     private static GameObject player;                       //  Player object
     private static GameObject enemy;                        //  Enemy object
     private static PlayerController playerCtrl;             //  Player controller
     private static EnemyController enemyCtrl;               //  Enemy controller
+    private static Rigidbody playerRb;                      //  Player rigidbody
+    private static Rigidbody enemyRb;                       //  Enemy rb
     public static int round;                                //  Current round
     public static IEnumerator wait(float seconds)
     {
@@ -22,12 +27,14 @@ public class GameUtils : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        // Set target fps to 60
-        Application.targetFrameRate = 60;
+        // Set target fps
+        Application.targetFrameRate = 144;
 
-        // Set starting round number
+        // Set starting variable states
         round = 1;
         Lock = false;
+        buyEnabled = false;
+        buyTime = 12f;          //  12s for buy period
 
         // Set max number of rounds
         maxRounds = 42;
@@ -37,6 +44,8 @@ public class GameUtils : MonoBehaviour
         enemy = GameObject.FindGameObjectWithTag("Enemy");
         playerCtrl = player.GetComponent<PlayerController>();
         enemyCtrl = enemy.GetComponent<EnemyController>();
+        playerRb = player.GetComponent<Rigidbody>();
+        enemyRb = enemy.GetComponent<Rigidbody>();
 
         // Set spawner objects and make them invisible
         playerSpawn = GameObject.FindGameObjectWithTag("PlayerSpawn");
@@ -46,17 +55,50 @@ public class GameUtils : MonoBehaviour
 
 
         // Move player and enemy to their spawn points
-        Debug.Log("Player position before move: " + player.transform.position);
         respawn();
-        Debug.Log("Player position after move: " + player.transform.position);
+    }
 
+    // Credit to Roixo from Unity forums: https://answers.unity.com/questions/893966/how-to-find-child-with-tag.html
+    // Find the child game object with a given tag
+    public static GameObject FindChildObjectWithTag(GameObject parent, string tag)
+    {
+        // Get parent transform
+        Transform tf = parent.transform;
+
+        // Iterate through child objects
+        for (int i = 0; i < tf.childCount; i++)
+        {
+            // Check if child's tag matches tag given
+            if (tf.GetChild(i).gameObject.tag == tag)
+            {
+                return tf.GetChild(i).gameObject;
+            }
+
+        }
+
+        return null;
     }
 
     private static void respawn()
     {
+        // Face towards buy wall
+        GameObject buyWall = GameObject.Find("BuyWall");
+        playerSpawn.transform.LookAt(buyWall.transform);
+
         // Move to spawn points
         player.transform.position = playerSpawn.transform.position;
         enemy.transform.position = enemySpawn.transform.position;
+
+        // Increment max ammo capacities
+        playerCtrl.maxAmmo++;
+        //enemyCtrl.maxAmmo++;
+        
+
+        // Get first person camera object
+        GameObject fpCamera = FindChildObjectWithTag(player, "FirstPersonCamera");
+        fpCamera.transform.LookAt(buyWall.transform);
+        // TODO: Add code to do this for enemy
+
 
         // Ensure mesh renderers are enabled (visible)
         player.GetComponent<MeshRenderer>().enabled = true;
@@ -67,6 +109,13 @@ public class GameUtils : MonoBehaviour
         enemyCtrl.health = enemyCtrl.maxHealth;
         playerCtrl.ammo = playerCtrl.maxAmmo;
         //enemyCtrl.ammo = enemyCtrl.maxAmmo;
+
+        // Check if buy period should be enabled
+        if(round > 1)
+        {
+            buyEnabled = true;
+            Lock = true;
+        }
     }
 
     private void checkForRoundEnd()
@@ -114,16 +163,23 @@ public class GameUtils : MonoBehaviour
     /*
      * Start the next round
      */
-    public static void nextRound()
+    public static void nextRound(bool skipWait = false)
     {
-        // Wait before starting the next round
-        wait(3f);
+        // Zero-out player and enemy velocities
+        playerRb.velocity = new Vector3(0, 0, 0);
+        enemyRb.velocity = new Vector3(0, 0, 0);
+
+        if(!skipWait)
+        {
+            // Wait before starting the next round
+            wait(3f);
+        }
+        
         round++;
 
         // Check if game is over
         if(round < maxRounds + 1)
         {
-            // TODO: Add logic to start next round
             Debug.Log("Round " + round + "!");
             respawn();
             printStats();
@@ -152,23 +208,73 @@ public class GameUtils : MonoBehaviour
         return Lock;
     }
 
+    public static bool mouseLocked()
+    {
+        return mouseLock;
+    }
+
+    public static void lockMouse(bool state)
+    {
+        mouseLock = state;
+    }
+
+    public static GameObject getPlayerObject()
+    {
+        return player;
+    }
+
+    public static GameObject getEnemyObject()
+    {
+        return enemy;
+    }
+
     //  Enable the 'Buy period' where the player and AI can purchase upgrades
     private static void buyPeriod()
     {
-        float waitTime = 15f; // 15s buy period
+        buyEnabled = true;
+        Lock = true;
 
-        while(waitTime > 0)
-        {
-            wait(1f);
-            waitTime--;
-        }
+        // TODO: Handle upgrade logic
+    }
+
+    public static bool BuyEnabled
+    {
+        get { return buyEnabled; }
     }
 
     // Update is called once per frame
     void Update()
     {
+        // Check if game is currently in pre-round buy period
+        if(buyEnabled)
+        {
+            if(buyTime == 12f)
+            {
+                Debug.Log("BUY PERIOD STARTED!");
+            }
+
+            // Decrement buyTime and call buyPeriod function
+            buyTime -= Time.deltaTime;
+
+            // Check if buy time has expired
+            if(buyTime > 0)
+            {
+                buyPeriod();
+            }
+            else
+            {
+                // End buy period and reset timer
+                buyEnabled = false;
+                Lock = false;
+                buyTime = 12f;
+                Debug.Log("BUY PERIOD ENDED!");
+            }
+        }
+
+        // Ensure game is not locked
         if(!locked())
         {
+            // Check for round end condition
             checkForRoundEnd();
         }
        

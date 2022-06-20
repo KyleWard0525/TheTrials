@@ -287,21 +287,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c03649551f475945ad951819accce7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  jumpHeight: 21
-  moveSpeed: 18
-  mouseSensitivity: 100
+  firstPersonCam: {fileID: 0}
   paintball: {fileID: 839528535473945654, guid: aeb23e876ce3dda46b79e97606f3ea55,
     type: 3}
   audioPlayer: {fileID: 82990732243991900}
   fireSound: {fileID: 8300000, guid: 2ee1a917c9ccc3a40953e70b44e0c258, type: 3}
   ping: {fileID: 8300000, guid: 857e07ccf5db6f140b92c5694b258dcc, type: 3}
-  runSound: {fileID: 8300000, guid: 0fe525431f81f2b47b35d294b561c9e5, type: 3}
+  ammoDamage: 100
+  armor: 0
   score: 0
   health: 100
   maxHealth: 100
   wins: 0
-  ammo: 0
-  maxAmmo: 0
+  ammo: 1
+  maxAmmo: 1
+  jumpHeight: 25
+  moveSpeed: 25
+  mouseSensitivity: 100
 --- !u!54 &4999379118169802655
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -311,13 +313,13 @@ Rigidbody:
   m_GameObject: {fileID: 4999379118169802645}
   serializedVersion: 2
   m_Mass: 3
-  m_Drag: 1
+  m_Drag: 1.2
   m_AngularDrag: 0.23
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 112
-  m_CollisionDetection: 2
+  m_CollisionDetection: 1
 --- !u!1 &4999379118330486985
 GameObject:
   m_ObjectHideFlags: 0
