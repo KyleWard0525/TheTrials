@@ -4,6 +4,7 @@ public class PlayerController : MonoBehaviour
 {
     
     private bool grounded;                                  //  Flag to check if player is on the ground
+    private bool running;                                   //  Flag to check/store if player is running
     private float mouseX;                                   //  Mouse X value
     private float mouseY;                                   //  Mouse Y value
     private float ammoVelocity;                             //  Initial velocity (m/s) of each paintball
@@ -31,6 +32,7 @@ public class PlayerController : MonoBehaviour
     {
         // Initialize variables
         grounded = false;
+        running = false;
         mouseX = 0f;
         mouseY = 0f;
         score = 0f;
@@ -119,9 +121,10 @@ public class PlayerController : MonoBehaviour
         }
         // Sprint
         if (Input.GetKey(KeyCode.LeftShift) && grounded)
-        {
-            rb.velocity = new Vector3(hInput * moveSpeed * 2, rb.velocity.y, vInput * moveSpeed * 2);
+        { 
+            rb.velocity = new Vector3(hInput * moveSpeed * 2, rb.velocity.y, vInput * moveSpeed * 2);   
         }
+
 
         // Check for fire input (LMB) from player
         if (Input.GetKeyDown(KeyCode.Mouse0) && ammo > 0)

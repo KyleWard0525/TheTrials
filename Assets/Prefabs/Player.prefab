@@ -295,10 +295,13 @@ MonoBehaviour:
   audioPlayer: {fileID: 82990732243991900}
   fireSound: {fileID: 8300000, guid: 2ee1a917c9ccc3a40953e70b44e0c258, type: 3}
   ping: {fileID: 8300000, guid: 857e07ccf5db6f140b92c5694b258dcc, type: 3}
+  runSound: {fileID: 8300000, guid: 0fe525431f81f2b47b35d294b561c9e5, type: 3}
   score: 0
   health: 100
   maxHealth: 100
   wins: 0
+  ammo: 0
+  maxAmmo: 0
 --- !u!54 &4999379118169802655
 Rigidbody:
   m_ObjectHideFlags: 0
