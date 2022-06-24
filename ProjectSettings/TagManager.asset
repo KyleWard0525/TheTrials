@@ -18,6 +18,7 @@ TagManager:
   - EnemySpawn
   - PlayerBuyWall
   - UpgradeButton
+  - PlayerScore
   layers:
   - Default
   - TransparentFX

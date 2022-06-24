@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 using UnityEngine.SceneManagement;
 
 public class GameUtils : MonoBehaviour
@@ -10,6 +12,7 @@ public class GameUtils : MonoBehaviour
     private static bool Lock;                               //  Lock control of game objects such as player and enemy
     private static bool mouseLock;                          //  Lock control of the mouse looking
     private static bool buyEnabled;                         //  Flag for controlling the buy period at round start
+    private static TextMeshPro playerScore;             //  Text object for displaying player's score
     private static GameObject playerSpawn;                  //  Player spawner
     private static GameObject enemySpawn;                   //  Enemy spawner
     private static GameObject player;                       //  Player object
@@ -19,6 +22,8 @@ public class GameUtils : MonoBehaviour
     private static Rigidbody playerRb;                      //  Player rigidbody
     private static Rigidbody enemyRb;                       //  Enemy rb
     public static int round;                                //  Current round
+    
+
     public static IEnumerator wait(float seconds)
     {
         yield return new WaitForSeconds(seconds);
@@ -53,6 +58,8 @@ public class GameUtils : MonoBehaviour
         enemySpawn = GameObject.FindGameObjectWithTag("EnemySpawn");
         enemySpawn.GetComponent<MeshRenderer>().enabled = false;
 
+        // Get player score text
+        playerScore = GameObject.FindGameObjectWithTag("PlayerScore").GetComponent<TextMeshPro>();
 
         // Move player and enemy to their spawn points
         respawn();
@@ -81,6 +88,9 @@ public class GameUtils : MonoBehaviour
 
     private static void respawn()
     {
+        // Update player score text
+        playerScore.text = playerCtrl.score.ToString();
+
         // Face towards buy wall
         GameObject buyWall = GameObject.Find("BuyWall");
         playerSpawn.transform.LookAt(buyWall.transform);
@@ -165,6 +175,7 @@ public class GameUtils : MonoBehaviour
      */
     public static void nextRound(bool skipWait = false)
     {
+
         // Zero-out player and enemy velocities
         playerRb.velocity = new Vector3(0, 0, 0);
         enemyRb.velocity = new Vector3(0, 0, 0);
